@@ -197,7 +197,7 @@ Compare your output dot plot against Figure 4d in the paper:
 
 ### Results & Figure Interpretations
 
-#### Figure 4d - Dot Plot of Canonical Markers
+#### 1) Figure 4d - Dot Plot of Canonical Markers
 
 ![Figure 4d dot plot](figures/figure4d_dotplot.png)
 
@@ -217,7 +217,7 @@ Several patterns stand out clearly in the reproduction:
 
 ---
 
-#### Supplementary Heatmap - Top DGE Genes per Tumor Subtype
+#### 2) Supplementary Heatmap - Top DGE Genes per Tumor Subtype
 
 ![Supplementary heatmap](figures/figure4d_supplementary_heatmap.png)
 
@@ -231,7 +231,7 @@ The heatmap shows the top 8 upregulated genes (Wilcoxon, one-vs-rest, p_adj < 0.
 
 ---
 
-#### Violin Plots - Key Differentially Expressed Genes
+#### 3) Violin Plots - Key Differentially Expressed Genes
 
 ![Violin plots](figures/figure4d_violin_key_genes.png)
 
@@ -244,25 +244,6 @@ The violin plots show the distribution of log-normalized expression for four gen
 **ALDH1A3** is highest in DCIS #1, with a pronounced right tail of high-expressing cells, and drops off in DCIS #2 and Invasive Tumor. ALDH1A3 is a marker of luminal progenitor and cancer stem-like cells, and its gradient across the three subtypes — high in DCIS #1, lower in invasive disease — suggests a progressive loss of a progenitor-like identity as the tumor transitions toward invasion.
 
 **KRT15** follows the same gradient as ALDH1A3: highest in DCIS #1, substantially reduced in DCIS #2, and near-absent in Invasive Tumor. KRT15 marks basal/myoepithelial progenitors, and its loss mirrors the breakdown of myoepithelial identity that the paper identifies as a hallmark of the DCIS-to-invasion transition. Together, the ALDH1A3 and KRT15 violins provide strong single-cell support for the paper's central claim that DCIS #1 retains a more intact, progenitor-enriched microenvironment compared to the more invasive subtypes.
-
----
-
-### Dependencies
-
-```
-scanpy
-matplotlib
-seaborn
-anndata
-pandas==2.2.2
-openpyxl
-gdown
-```
-
-Install with:
-```bash
-pip install scanpy matplotlib seaborn openpyxl anndata pandas==2.2.2 gdown
-```
 
 ---
 
