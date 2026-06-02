@@ -399,7 +399,16 @@ Step 5 — Preprocess the Data
 Expression values were normalized and log-transformed to make them comparable across cells.
 Step 6 — Reproduce Figure 3b
 Spatial expression maps were generated for the eight marker genes highlighted in the paper:
-GeneAssociated Cell PopulationPOSTNStromal CellsIL7RLymphocytesITGAXMacrophagesACTA2Myoepithelial CellsKRT15Myoepithelial CellsVWFEndothelial CellsCEACAM6DCIS RegionsFASNInvasive Tumor Regions
+| Gene | Associated Cell Population |
+|------|---------------------------|
+| POSTN | Stromal Cells |
+| IL7R | Lymphocytes |
+| ITGAX | Macrophages |
+| ACTA2 | Myoepithelial Cells |
+| KRT15 | Myoepithelial Cells |
+| VWF | Endothelial Cells |
+| CEACAM6 | DCIS Regions |
+| FASN | Invasive Tumor Regions |
 
 ## Results
 The reproduced figure captured the spatial gene expression landscape across the breast tissue section clearly and consistently. A few patterns stood out particularly well:
