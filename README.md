@@ -67,29 +67,36 @@ In a second tissue sample Xenium identified rare boundary cells co-expressing bo
 
 ```
 tumor_high_resolution_mapping/
-│
-├── README.md
 ├── LICENSE
-│
-├── figures/
-│   ├── figure2b_spatial_clusters.png
-│   ├── figure2c_combined_panel.png
-│   ├── figure2c_SCGB2A2.png
-│   ├── figure2c_CPB1.png
-│   ├── figure2c_KRT17.png
-│   ├── figure2c_FABP4.png
-│   ├── figure2c_IL2RG.png
-│   ├── figure2c_SFRP2.png
-│   ├── figure2c_CDH2.png
-│   ├── figure2c_MT-ND1.png
-│   ├── marker_genes_all_clusters.png
-│   ├── pca_variance_ratio.png
-│   ├── qc_after_filtering.png
-│   ├── qc_before_filtering.png
-│   └── tsne_17clusters_annotated.png
-│
-└── notebooks/
-    └── Visium_Analysis.ipynb
+├── README.md
+├── figures
+│   ├── figure2b_spatial_clusters.png
+│   ├── figure2c_CDH2.png
+│   ├── figure2c_CPB1.png
+│   ├── figure2c_FABP4.png
+│   ├── figure2c_IL2RG.png
+│   ├── figure2c_KRT17.png
+│   ├── figure2c_MT-ND1.png
+│   ├── figure2c_SCGB2A2.png
+│   ├── figure2c_SFRP2.png
+│   ├── figure2c_combined_panel.png
+│   ├── figure4d_dotplot.png
+│   ├── figure4d_supplementary_heatmap.png
+│   ├── figure4d_violin_key_genes.png
+│   ├── marker_genes_all_clusters.png
+│   ├── pca_variance_ratio.png
+│   ├── qc_after_filtering.png
+│   ├── qc_before_filtering.png
+│   └── tsne_17clusters_annotated.png
+├── notebooks
+│   ├── DGE_figure4d.ipynb
+│   ├── Visium_Analysis.ipynb
+│   └── scFFPE_seq_pipeline.ipynb
+└── outputs
+    ├── dge_DCIS_1.csv
+    ├── dge_DCIS_2.csv
+    └── dge_Invasive_Tumor.csv
+
 ```
 ---
 
@@ -98,6 +105,164 @@ tumor_high_resolution_mapping/
 > **Placeholder** — to be completed by Member 1.
 >
 > This section will cover the scFFPE-seq pipeline, quality control, dimensionality reduction and reproduction of Figure 2a showing the 17 annotated cell type clusters.
+
+---
+## Differential Gene Expression & Figure 4d Reproduction
+
+### What This Section Covers
+
+We started by taking the processed and annotated scFFPE-seq AnnData object produced by the scFFPE-seq pipeline as the starting point and focused on characterizing transcriptional differences between the three tumor subregions identified in the paper: **DCIS #1**, **DCIS #2**, and **Invasive Tumor**. The primary deliverable is a reproduction of **Figure 4d** from Janesick et al. (2023, *Nature Communications*) which is a dot plot of canonical marker genes and differentially expressed genes across these three ROIs - alongside supporting DGE analysis.
+
+---
+
+### Biological Context
+
+Figure 4d in the paper captures one of its most important comparative findings: that the three tumor compartments (DCIS #1, DCIS #2, and Invasive Tumor) are transcriptionally distinct in ways that go beyond simple tumor-vs-normal differences. Specifically:
+
+- **DCIS #1** shows uniquely high expression of the B-cell plasma marker **MZB1**, and its associated myoepithelial population retains high levels of **KRT15**, **KRT23**, and **ALDH1A3** - markers associated with a more intact myoepithelial barrier.
+- **DCIS #2** shows elevated stromal **GJB2** and reduced myoepithelial marker expression relative to DCIS #1, suggesting a microenvironment further along toward barrier disruption.
+- **Invasive Tumor** is characterized by strong **FASN** and **CDH2** expression, complete absence of myoepithelial markers, and the disappearance of **MMP12** from macrophages which is a pattern consistent with active invasion and remodeling of the surrounding stroma.
+
+These distinctions are not visible from spatial or bulk data alone; they require the single-cell resolution provided by the scFFPE-seq data.
+
+---
+
+### Inputs Used
+
+| File | Source | Notes |
+|------|--------|-------|
+| `annotated_adata.h5ad` | Shared Google Drive | ~1 GB; downloaded directly in Colab via `gdown` using file ID `1WJ55pvJinUlUeL1YEROT-GbDfm7CQnGT` |
+
+The AnnData file obtained from the scFFPE-seq pipeline contains the full whole-transcriptome scFFPE-seq matrix (~27,000 cells × 18,536 genes) with cell-type annotations. No manual downloading or Drive mounting is required - the notebook handles the download automatically.
+
+---
+
+### Pipeline Summary
+
+```
+    annotated_adata.h5ad (~1 GB)
+         ↓  downloaded directly in Colab via gdown (no manual upload needed)
+         ↓
+    LOAD AND VALIDATE
+  confirm annotation column and cell type labels
+  check log-normalization; normalize if raw counts detected
+         ↓
+         ↓
+    FIGURE 4D - DOTPLOT
+  7 gene categories × 10 cell types
+  dot size = fraction of cells expressing the gene
+  dot color = mean scaled expression (RdBu_r, 0→1 per gene)
+         ↓
+         ↓
+    DGE - WILCOXON RANK-SUM (ONE-VS-REST)
+  subset to DCIS #1 / DCIS #2 / Invasive Tumor
+  top 50 genes per group, filtered to p_adj < 0.05
+  and log2FC ≥ 1
+         ↓
+         ↓
+    SUPPLEMENTARY HEATMAP
+  top 8 DGE genes per tumor subtype
+  visualized across all tumor cells
+         ↓
+         ↓
+    VIOLIN PLOTS
+  MZB1, MMP12, ALDH1A3, KRT15 across
+  the three tumor subtypes
+         ↓
+         ↓
+      OUTPUTS
+  figures/figure4d_dotplot.png
+  figures/figure4d_supplementary_heatmap.png
+  figures/figure4d_violin_key_genes.png
+  outputs/dge_DCIS_1.csv
+  outputs/dge_DCIS_2.csv
+  outputs/dge_Invasive_Tumor.csv
+```
+
+The notebook **`DGE_figure4d.ipynb`** runs end-to-end in Google Colab (free tier).
+
+
+---
+
+### How to Verify the Reproduction
+
+Compare your output dot plot against Figure 4d in the paper:
+
+1. **DCIS #1 row** - high expression in Myoepithelial genes (KRT23, ALDH1A3, KRT15) and exclusive B-cell marker MZB1
+2. **DCIS #2 row** - GJB2 stromal signal present; myoepithelial expression reduced relative to DCIS #1
+3. **Invasive Tumor row** - strong FASN/CDH2; myoepithelial markers absent; MMP12 absent from macrophages
+
+---
+
+
+### Results & Figure Interpretations
+
+#### Figure 4d - Dot Plot of Canonical Markers
+
+![Figure 4d dot plot](figures/figure4d_dotplot.png)
+
+The dot plot displays 10 cell types against 7 gene-category columns. Each dot's size encodes the fraction of cells in that group expressing the gene; color encodes scaled mean expression (dark red = high, dark blue = low).
+
+Several patterns stand out clearly in the reproduction:
+
+**Tumor rows (DCIS #1, DCIS #2, Invasive Tumor)** are transcriptionally sparse against non-tumor marker genes, confirming they do not aberrantly co-express immune or stromal programs. Among the tumor genes, **DCIS #2** shows the strongest **SERPINA3** signal which is a serine protease inhibitor associated with a more secretory, luminal tumor phenotype. The Invasive Tumor row shows the broadest activation across tumor markers, consistent with the proliferative state expected in invasive carcinoma.
+
+**KRT15+ Myoepithelial** cells dominate the Myoepithelial gene column, with large dark-red dots at **KRT15**, **MYLK**, and **ACTA2**. This is biologically consistent: KRT15 is a basal/myoepithelial identity marker, and its retention at high levels in this population confirms an intact myoepithelial phenotype. Notably, the DCIS #1 and DCIS #2 rows show only faint myoepithelial signal, confirming these are epithelial tumor populations rather than myoepithelial ones.
+
+**Stromal cells** show large dots at **SFRP2** and **POSTN** (canonical cancer-associated fibroblast markers) with the Stromal row cleanly separated from all other groups in this column.
+
+**T Cells** resolve sharply through **CXCR4**, **TRAC**, and **CD4**, with large dots concentrated in those three genes. **B Cells** are defined by **MS4A1** and **BANK1**, while **MZB1** (a plasma cell differentiation marker) is most concentrated in the B Cells row, consistent with its role as a late B-cell maturation gene. MZB1's presence near DCIS #1 in the violin analysis (below) reflects a spatial proximity or co-enrichment of plasma B cells in that ROI rather than tumor cell expression.
+
+**Macrophage subtypes** (1 and 2) differ in their C1QA and ITGAX distributions. MMP12, a macrophage-secreted metalloproteinase, is nearly absent across all rows, which is addressed further in the violin section. **Endothelial cells** are cleanly separated by **VWF**, **PECAM1**, and **AQP1**, providing a reliable internal positive control for vascular cell identity.
+
+---
+
+#### Supplementary Heatmap - Top DGE Genes per Tumor Subtype
+
+![Supplementary heatmap](figures/figure4d_supplementary_heatmap.png)
+
+The heatmap shows the top 8 upregulated genes (Wilcoxon, one-vs-rest, p_adj < 0.05, log2FC ≥ 1) for each of the three tumor subtypes, with individual cells as rows and genes as columns. The viridis color scale represents log-normalized expression.
+
+**DCIS #2** (orange bar) is defined by **CPB1**, **TFF3**, **CD24**, **PLAT**, **SLC39A6**, **MUCL1**, **CRABP2**, and **CEACAM6**. CPB1 (carboxypeptidase B1) and TFF3 (trefoil factor 3) are secretory luminal markers — their enrichment in DCIS #2 is consistent with this subtype showing a more secretory, luminal identity. CEACAM6, a cell adhesion molecule frequently upregulated in invasive-tending DCIS, is notable here as a potential marker of elevated invasion risk in this subtype.
+
+**DCIS #1** (blue bar) is defined by **NR2F1**, **UGT2B4**, **SCGB2A2**, **MUC16**, **FAM20A**, **PCDH10**, **NXPH3**, and **SCGB1D2**. SCGB2A2 (mammaglobin) and SCGB1D2 are canonical luminal breast markers, while NR2F1 is a nuclear receptor associated with a stem-like state in cancer. The presence of PCDH10 (protocadherin 10, frequently silenced in invasive cancers) in the DCIS #1 signature is particularly interesting - it may contribute to the contained, non-invasive character of this subtype.
+
+**Invasive Tumor** (green bar) is marked by **CPNE7**, **PSCA**, **PIP**, **HAGHL**, **ADAM8**, **CRACR2B**, **WDR90**, and **ARID5B**. ADAM8 is a disintegrin-metalloprotease associated with tumor cell migration and invasion, making its exclusive enrichment in the Invasive Tumor subtype biologically apt. PSCA (prostate stem cell antigen) has been observed in invasive breast cancer. The Invasive Tumor cells cluster close to DCIS #1 on the dendrogram (right side), while DCIS #2 branches separately, suggesting that at the transcriptome level DCIS #1 and Invasive Tumor share a closer lineage than either does with DCIS #2.
+
+---
+
+#### Violin Plots - Key Differentially Expressed Genes
+
+![Violin plots](figures/figure4d_violin_key_genes.png)
+
+The violin plots show the distribution of log-normalized expression for four genes across DCIS #1, DCIS #2, and Invasive Tumor.
+
+**MZB1** is most highly expressed in DCIS #1, with a broader distribution and more high-expressing cells than DCIS #2 or Invasive Tumor. While MZB1 is primarily a plasma cell marker, its enrichment near DCIS #1 in the single-cell data is consistent with the paper's finding that DCIS #1 harbors a more active B-cell/plasma cell immune infiltrate in its microenvironment.
+
+**MMP12** is essentially absent across all three tumor subtypes, which is expected — MMP12 is a macrophage-secreted metalloproteinase, not a tumor cell marker. Its near-zero expression here confirms that the DGE is cleanly reflecting cell-intrinsic tumor programs rather than contaminating macrophage signal. The paper's finding that MMP12 is absent in the Invasive ROI refers to the macrophage population within that region, which is appropriately captured in the dot plot (Macrophages rows) rather than in the tumor-subtype DGE.
+
+**ALDH1A3** is highest in DCIS #1, with a pronounced right tail of high-expressing cells, and drops off in DCIS #2 and Invasive Tumor. ALDH1A3 is a marker of luminal progenitor and cancer stem-like cells, and its gradient across the three subtypes — high in DCIS #1, lower in invasive disease — suggests a progressive loss of a progenitor-like identity as the tumor transitions toward invasion.
+
+**KRT15** follows the same gradient as ALDH1A3: highest in DCIS #1, substantially reduced in DCIS #2, and near-absent in Invasive Tumor. KRT15 marks basal/myoepithelial progenitors, and its loss mirrors the breakdown of myoepithelial identity that the paper identifies as a hallmark of the DCIS-to-invasion transition. Together, the ALDH1A3 and KRT15 violins provide strong single-cell support for the paper's central claim that DCIS #1 retains a more intact, progenitor-enriched microenvironment compared to the more invasive subtypes.
+
+---
+
+### Dependencies
+
+```
+scanpy
+matplotlib
+seaborn
+anndata
+pandas==2.2.2
+openpyxl
+gdown
+```
+
+Install with:
+```bash
+pip install scanpy matplotlib seaborn openpyxl anndata pandas==2.2.2 gdown
+```
 
 ---
 
@@ -214,14 +379,6 @@ MT-ND1 is broadly expressed across the tissue but with the highest intensity in 
 
 The full analysis notebook is available at:
 `notebooks/Visium_Analysis.ipynb`
-
----
-
-## Member 3 — Differential Gene Expression
-
-> **Placeholder** — to be completed by Member 3.
->
-> This section will cover the differential gene expression pipeline, triple-positive DCIS region identification and reproduction of Figure 4d showing the dot plot of canonical marker genes across tumor subtypes.
 
 ---
 
