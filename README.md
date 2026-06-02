@@ -100,7 +100,7 @@ tumor_high_resolution_mapping/
 ```
 ---
 
-## Member 1 — scRNA-seq Single Cell Foundation
+## scRNA-seq Single Cell Foundation
 
 ### What This Section Covers
 
