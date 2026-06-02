@@ -70,28 +70,28 @@ tumor_high_resolution_mapping/
 ├── LICENSE
 ├── README.md
 ├── figures
-│   ├── figure2b_spatial_clusters.png
-│   ├── figure2c_CDH2.png
-│   ├── figure2c_CPB1.png
-│   ├── figure2c_FABP4.png
-│   ├── figure2c_IL2RG.png
-│   ├── figure2c_KRT17.png
-│   ├── figure2c_MT-ND1.png
-│   ├── figure2c_SCGB2A2.png
-│   ├── figure2c_SFRP2.png
-│   ├── figure2c_combined_panel.png
-│   ├── figure4d_dotplot.png
-│   ├── figure4d_supplementary_heatmap.png
-│   ├── figure4d_violin_key_genes.png
-│   ├── marker_genes_all_clusters.png
-│   ├── pca_variance_ratio.png
-│   ├── qc_after_filtering.png
-│   ├── qc_before_filtering.png
-│   └── tsne_17clusters_annotated.png
+│   ├── figure2b_spatial_clusters.png
+│   ├── figure2c_CDH2.png
+│   ├── figure2c_CPB1.png
+│   ├── figure2c_FABP4.png
+│   ├── figure2c_IL2RG.png
+│   ├── figure2c_KRT17.png
+│   ├── figure2c_MT-ND1.png
+│   ├── figure2c_SCGB2A2.png
+│   ├── figure2c_SFRP2.png
+│   ├── figure2c_combined_panel.png
+│   ├── figure4d_dotplot.png
+│   ├── figure4d_supplementary_heatmap.png
+│   ├── figure4d_violin_key_genes.png
+│   ├── marker_genes_all_clusters.png
+│   ├── pca_variance_ratio.png
+│   ├── qc_after_filtering.png
+│   ├── qc_before_filtering.png
+│   └── tsne_17clusters_annotated.png
 ├── notebooks
-│   ├── DGE_figure4d.ipynb
-│   ├── Visium_Analysis.ipynb
-│   └── scFFPE_seq_pipeline.ipynb
+│   ├── DGE_figure4d.ipynb
+│   ├── Visium_Analysis.ipynb
+│   └── scFFPE_seq_pipeline.ipynb
 └── outputs
     ├── dge_DCIS_1.csv
     ├── dge_DCIS_2.csv
@@ -102,11 +102,134 @@ tumor_high_resolution_mapping/
 
 ## Member 1 — scRNA-seq Single Cell Foundation
 
-> **Placeholder** — to be completed by Member 1.
->
-> This section will cover the scFFPE-seq pipeline, quality control, dimensionality reduction and reproduction of Figure 2a showing the 17 annotated cell type clusters.
+### What This Section Covers
+
+This section covers the scFFPE-seq pipeline — the single-cell RNA sequencing arm of the study. It handles everything from raw data loading and quality control through to dimensionality reduction, clustering, and cell type annotation, reproducing Figure 2a from the paper which shows 17 annotated cell type clusters in a t-SNE projection. This pipeline is the foundation that everything else in the project builds on, because the cell type labels produced here are what get transferred onto the Visium and Xenium datasets by the other members.
+
+### Biological Context
+
+The reason single-cell sequencing is needed here comes down to a fundamental problem with studying tumors. Breast cancer tissue is not a uniform mass — even within one small biopsy block there are regions of contained DCIS, regions that are already invasive, pockets of immune infiltration, thin rings of myoepithelial cells wrapping around ducts, and stromal cells filling the spaces between all of it. If you take a bulk measurement of that tissue you get one averaged signal that completely obscures all of that heterogeneity. You need to profile cells individually to pull apart those distinct populations.
+
+The specific challenge here is that the tissue is FFPE — preserved in formalin and embedded in paraffin, which is how almost all clinical biobank samples are stored. Formalin cross-links RNA and fragments it into short pieces, making it incompatible with standard single-cell sequencing chemistries that depend on capturing intact poly-A tails. The scFFPE-seq platform gets around this using RTL chemistry, where pairs of short probes hybridize to adjacent internal sequences on the mRNA and only generate a signal when both bind correctly side by side. This makes the chemistry robust to degraded FFPE RNA in a way that conventional platforms are not, and it is the main reason this platform was chosen over the standard Chromium 3' or 5' GEX options.
+
+### Data and Files Used
+
+| File | Source | Notes |
+|------|--------|-------|
+| `filtered_feature_bc_matrix.h5` | GEO accession GSE243280 | HDF5 format gene-barcode matrix |
+| `matrix.mtx.gz` + `barcodes.tsv.gz` + `features.tsv.gz` | GEO accession GSE243280 | MEX format alternative |
+
+Both formats store the same gene × cell count matrix. The HDF5 file is faster to load and preferred for large datasets. Raw data is also available from the 10x Genomics preview dataset page linked in the Data Availability section.
+
+### Pipeline Summary
+
+```
+filtered_feature_bc_matrix.h5
+         ↓
+    LOAD AND VALIDATE
+  read with scanpy.read_10x_h5()
+  make variable names unique
+         ↓
+    QUALITY CONTROL
+  annotate mitochondrial genes (MT- prefix)
+  compute QC metrics per cell
+  filter: mt fraction ≤ 15%
+  filter: genes detected ≥ 500
+  filter: largest gene fraction ≤ 0.2
+         ↓
+    NORMALIZATION
+  normalize total counts to 10,000 per cell
+  log1p transform
+  select highly variable genes
+         ↓
+    DIMENSIONALITY REDUCTION
+  PCA — top 50 components
+  t-SNE via monet package v0.3.2
+         ↓
+    CLUSTERING
+  Leiden algorithm
+  tune resolution until 17 clusters
+         ↓
+    ANNOTATION
+  DGE per cluster via rank_genes_groups
+  cross-reference Wu et al. 2021 and Karlsson et al. 2021 atlases
+  Visium spatial patterns used as tiebreaker
+         ↓
+    OUTPUTS
+  figures/qc_before_filtering.png
+  figures/qc_after_filtering.png
+  figures/pca_variance_ratio.png
+  figures/tsne_17clusters_annotated.png
+  figures/marker_genes_all_clusters.png
+  outputs/annotated_adata.h5ad
+```
+
+The full notebook is available at `notebooks/scFFPE_seq_pipeline.ipynb` and runs end-to-end in Google Colab.
+
+### Results and Figure Interpretations
+
+#### 1) Quality Control — Before and After Filtering
+
+Before applying any filters it is important to look at the raw distribution of QC metrics across all cells to understand what you are working with and why the thresholds are set where they are.
+
+**Before filtering:**
+
+![QC before filtering](figures/qc_before_filtering.png)
+
+The three panels show `n_genes_by_counts` (number of genes detected per cell), `total_counts` (total transcripts per cell), and `pct_counts_mt` (percentage of counts from mitochondrial genes) before any filtering. You can see that the distributions have long upper tails — there are cells with very high gene counts, very high total counts, and cells where mitochondrial transcripts make up a large fraction of everything detected. The dense mass at the bottom of each violin represents the bulk of cells with moderate values, but the scattered points above represent cells that are either doublets, damaged, or technical artifacts that would distort the clustering if left in.
+
+**After filtering:**
+
+![QC after filtering](figures/qc_after_filtering.png)
+
+After applying the three QC filters — mitochondrial fraction ≤ 15%, genes detected ≥ 500, largest gene fraction ≤ 0.2 — the distributions are considerably cleaner. The mitochondrial fraction panel in particular shows a much tighter range, confirming that the damaged cell population has been removed. The `n_genes` and `total_counts` panels retain a reasonable spread which is expected given the genuine biological diversity of cell types in the sample — a myoepithelial cell and a macrophage will naturally differ in how many genes they express.
+
+These three filters follow directly from the Methods section of the paper and each has a clear biological justification. High mitochondrial fraction indicates a cell where cytoplasmic RNA has leaked out while mitochondria are retained — a hallmark of cell damage. Too few detected genes means the GEM well likely captured an empty droplet or debris rather than a real cell. A single gene dominating more than 20% of counts suggests a technical artifact rather than genuine biology.
+
+#### 2) PCA Variance Ratio
+
+![PCA variance ratio](figures/pca_variance_ratio.png)
+
+This plot shows how much variance each principal component captures, ranked from PC1 downward on a log scale. The curve drops steeply for the first few components and then flattens out into a gradual elbow somewhere around PC6 to PC8. This pattern is typical for single-cell data and confirms that retaining 50 components as stated in the paper is a reasonable choice — the first handful of PCs capture the major axes of biological variation (the broad cell type differences) while the later ones capture finer-grained variation that is still biologically relevant rather than pure noise. Cutting off too early would lose information about the rarer cell populations.
+
+#### 3) Figure 2a Reproduction — t-SNE with 17 Annotated Clusters
+
+![t-SNE 17 annotated clusters](figures/tsne_17clusters_annotated.png)
+
+This is the main output of the Member 1 pipeline and the reproduction of Figure 2a from the paper. Each point is a single cell, colored and labeled by its annotated cell type. The overall layout matches the published figure well — the major cell type compartments occupy consistent regions of the embedding and the 17 clusters are clearly resolved with interpretable separation.
+
+A few things are worth pointing out specifically. The two DCIS clusters sit in adjacent but distinct regions on the left side of the embedding — DCIS #1 and DCIS #2 are transcriptionally different enough that unsupervised clustering treats them as separate populations, which is one of the key findings of the paper. The Invasive Tumor and Proliferative Invasive clusters are nearby but do not collapse into one group, indicating internal heterogeneity within the invasive compartment. The two myoepithelial clusters (ACTA2+ and KRT15+) occupy a relatively isolated region of the embedding away from both the tumor and immune clusters, which is consistent with their specialized biological identity. The immune clusters — macrophages, T cells, dendritic cells, B cells — group loosely together on the right side of the embedding, with each subtype forming its own distinct island.
+
+One important caveat: distances in t-SNE space are not linearly interpretable. Two clusters that look far apart in this projection are not necessarily more different than two that look close, particularly for populations on the periphery. The annotation decisions were made based on the differential gene expression analysis and reference atlas comparisons, not on where the clusters sit visually in the embedding.
+
+#### 4) Marker Genes Across All 17 Clusters
+
+![Marker genes all clusters](figures/marker_genes_all_clusters.png)
+
+This panel shows the top differentially expressed genes for each of the 17 clusters in a one-vs-rest comparison. Each subplot corresponds to one cluster and the genes are ranked by their Wilcoxon score against all other cells. Several things stand out when you look across the full panel.
+
+Cluster 0 (Invasive Tumor) is defined by CDH2, PSAP3, STARD3 and other genes consistent with an invasive epithelial state. Cluster 1 (CD4+ T cells) shows IL7R and TRAC cleanly at the top, which are canonical T cell markers. Cluster 4 (DCIS #2) shows TFF3, CPB1, CD24 and CEACAM6 — the secretory luminal identity that the paper associates with this more invasive DCIS subtype. Cluster 5 (Stromal) is dominated by collagen genes COL3A1, COL1A2, COL1A1 and POSTN, which are classic cancer-associated fibroblast markers. Cluster 9 (DCIS #1) shows DCAF7, MK667, TOP2A alongside AGR3, which is consistent with the paper's finding that AGR3 marks DCIS tumor epithelium but not invasive cells. Cluster 11 (B cells) shows MS4A1, CITA, CD74 and BANK1. Cluster 7 (KRT15+ Myoepithelial) shows KRT5, KRT17, KRT14, TAGLN and DST — all basal and myoepithelial identity markers. Cluster 15 shows PROM1 among its top genes, which the paper later identifies as a marker specifically enriched in the rare boundary cell population.
+
+The fact that each cluster has a clean, interpretable marker gene signature — rather than noisy or mixed lists — gives confidence that the QC filtering and clustering resolution were appropriate for this dataset.
+
+### Key Statistics Verified
+
+| Metric | Paper Reports | Reproduced |
+|--------|--------------|------------|
+| Total clusters | 17 | 17 |
+| Median genes per cell | 1,480 | ~1,480 |
+| Total probe set | 18,536 genes | 18,536 genes |
+| PCA components used | 50 | 50 |
+| Mitochondrial fraction cutoff | ≤ 15% | ≤ 15% |
+| Min genes per cell | ≥ 500 | ≥ 500 |
+| Largest gene fraction cutoff | ≤ 0.2 | ≤ 0.2 |
+
+### Notebook
+
+The full analysis notebook is available at: `notebooks/scFFPE_seq_pipeline.ipynb`
 
 ---
+
 ## Differential Gene Expression & Figure 4d Reproduction
 
 ### What This Section Covers
