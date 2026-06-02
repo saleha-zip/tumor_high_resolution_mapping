@@ -364,46 +364,28 @@ The full analysis notebook is available at:
 ---
 
 ## Member 4 — Xenium In Situ
-
-Member 4 — Xenium In Situ
 This section covers the spatial transcriptomics analysis carried out using Xenium In Situ, focusing on processed cell-level data. By combining spatial coordinates with gene expression measurements, I was able to reproduce Figure 3b from the original study and visualize how key marker genes are distributed across breast cancer tissue at single-cell resolution.
 
-What Is Xenium In Situ?
+## What Is Xenium In Situ?
 Xenium In Situ is a spatial transcriptomics platform developed by 10x Genomics. What makes it different from conventional RNA sequencing is that it doesn't just tell you which genes are expressed — it tells you where in the tissue they're expressed. That spatial context is something traditional methods simply can't provide.
-Why Was Xenium Needed?
+## Why Was Xenium Needed?
 Standard single-cell sequencing requires dissociating tissue into individual cells, which means all spatial information is lost in the process. Xenium gets around this by keeping cells in place within the tissue section. This makes it possible to:
 
 Map gene expression at high resolution while preserving tissue architecture
 Identify how different cell types are spatially organized relative to one another
 Distinguish between tumor, stromal, immune, and vascular compartments within the same tissue sample
 
-For a study focused on breast cancer tissue organization, this kind of spatial awareness was essential.
-
-Dataset
+## Dataset
 Two processed Xenium files were used for this analysis:
-Gene Expression Matrix:
-
-Xenium_FFPE_Human_Breast_Cancer_Rep1_cell_feature_matrix.h5
-
-Cell Coordinate Data:
-
-Xenium_FFPE_Human_Breast_Cancer_Rep1_cells.csv.gz
-
+Gene Expression Matrix: Xenium_FFPE_Human_Breast_Cancer_Rep1_cell_feature_matrix.h5
+Cell Coordinate Data: Xenium_FFPE_Human_Breast_Cancer_Rep1_cells.csv.gz
 The raw transcript-level file was excluded — it runs several gigabytes in size and wasn't needed to reproduce Figure 3b.
 
-Software and Libraries
-The analysis was run in Google Colab using the following Python libraries:
-
-Scanpy
-Squidpy
-Pandas
-NumPy
-Matplotlib
-
-These were installed with:
+## Software and Libraries
+The analysis was run in Google Colab using the following Python libraries: Scanpy, Squidpy, Pandas, NumPy, and Matplotlib, installed with:
 !pip install -q scanpy squidpy matplotlib openpyxl
 
-Analysis Pipeline
+## Analysis Pipeline
 Step 1 — Load Expression Data
 The Xenium HDF5 expression matrix was read into an AnnData object using Scanpy.
 Step 2 — Load Cell Coordinates
@@ -418,9 +400,8 @@ Expression values were normalized and log-transformed to make them comparable ac
 Step 6 — Reproduce Figure 3b
 Spatial expression maps were generated for the eight marker genes highlighted in the paper:
 GeneAssociated Cell PopulationPOSTNStromal CellsIL7RLymphocytesITGAXMacrophagesACTA2Myoepithelial CellsKRT15Myoepithelial CellsVWFEndothelial CellsCEACAM6DCIS RegionsFASNInvasive Tumor Regions
-Each gene was plotted using the spatial embedding to recreate the expression patterns described in the original figure.
 
-Results
+## Results
 The reproduced figure captured the spatial gene expression landscape across the breast tissue section clearly and consistently. A few patterns stood out particularly well:
 
 POSTN was confined to stromal regions, as expected for an extracellular matrix-associated gene
@@ -434,7 +415,7 @@ These patterns aligned well with what the original publication described, giving
 Biological Insight
 What this analysis really drives home is how spatially structured breast cancer tissue is. It's not just a mass of tumor cells — there are distinct compartments for stromal, immune, vascular, and tumor populations, each occupying their own spatial territory. Seeing those boundaries visualized at single-cell resolution makes it much easier to appreciate how the tumor microenvironment is organized and how different cell types might be interacting with one another.
 
-Conclusion
+## Conclusion
 Using Xenium spatial transcriptomics data, the spatial gene expression patterns from Figure 3b were successfully reconstructed. The results confirmed that multiple biologically meaningful cell populations are spatially segregated within breast cancer tissue, and reinforced why spatial transcriptomics is such a valuable tool for studying how tumors are structured at the tissue level.
 
 <img width="3169" height="1421" alt="image3b" src="https://github.com/user-attachments/assets/d73c92ed-019c-43ba-bc43-c69b5a7490ab" />
