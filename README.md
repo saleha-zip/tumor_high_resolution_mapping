@@ -70,28 +70,11 @@ tumor_high_resolution_mapping/
 ├── LICENSE
 ├── README.md
 ├── figures
-│   ├── figure2b_spatial_clusters.png
-│   ├── figure2c_CDH2.png
-│   ├── figure2c_CPB1.png
-│   ├── figure2c_FABP4.png
-│   ├── figure2c_IL2RG.png
-│   ├── figure2c_KRT17.png
-│   ├── figure2c_MT-ND1.png
-│   ├── figure2c_SCGB2A2.png
-│   ├── figure2c_SFRP2.png
-│   ├── figure2c_combined_panel.png
-│   ├── figure4d_dotplot.png
-│   ├── figure4d_supplementary_heatmap.png
-│   ├── figure4d_violin_key_genes.png
-│   ├── marker_genes_all_clusters.png
-│   ├── pca_variance_ratio.png
-│   ├── qc_after_filtering.png
-│   ├── qc_before_filtering.png
-│   └── tsne_17clusters_annotated.png
 ├── notebooks
-│   ├── DGE_figure4d.ipynb
-│   ├── Visium_Analysis.ipynb
-│   └── scFFPE_seq_pipeline.ipynb
+│   ├── 1_scFFPE_seq_pipeline.ipynb
+│   ├── 2_DGE_figure4d.ipynb
+│   ├── 3_Visium_Analysis.ipynb
+│   └── 4_Xenium.ipynb
 └── outputs
     ├── dge_DCIS_1.csv
     ├── dge_DCIS_2.csv
