@@ -486,7 +486,7 @@ The full analysis notebook is available at:
 
 ---
 
-## Member 4 — Xenium In Situ
+## Xenium In Situ
 This section covers the spatial transcriptomics analysis carried out using Xenium In Situ, focusing on processed cell-level data. By combining spatial coordinates with gene expression measurements, I was able to reproduce Figure 3b from the original study and visualize how key marker genes are distributed across breast cancer tissue at single-cell resolution.
 
 ## What Is Xenium In Situ?
